@@ -29,12 +29,11 @@ configure_file(
 )
 
 hunter_add_package(ZLIB)
-find_package(ZLIB REQUIRED)
+find_package(ZLIB REQUIRED CONFIG)
 
 include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_BINARY_DIR}"
-    ${ZLIB_INCLUDE_DIRS}
 )
 
 set(
@@ -98,7 +97,7 @@ else()
 endif()
 
 add_library(libtiff ${lib_srcs})
-target_link_libraries(libtiff ${ZLIB_LIBRARIES})
+target_link_libraries(libtiff PUBLIC ZLIB::zlib)
 
 if(UNIX AND CMAKE_COMPILER_IS_GNUCXX)
   set_target_properties(libtiff PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -107,3 +106,13 @@ endif()
 if(ENABLE_SOLUTION_FOLDERS)
   set_target_properties(libtiff PROPERTIES FOLDER "3rdparty")
 endif()
+
+install(TARGETS libtiff DESTINATION lib EXPORT TIFFTargets)
+install(EXPORT TIFFTargets NAMESPACE TIFF:: DESTINATION lib/cmake/TIFF)
+install(FILES TIFFConfig.cmake DESTINATION lib/cmake/TIFF)
+install(
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/tif_config.h" tiffio.h tiff.h tiffvers.h
+    DESTINATION include
+)
+
+target_include_directories(libtiff PUBLIC "$<INSTALL_INTERFACE:include>")
