@@ -28,6 +28,7 @@ configure_file(
     @ONLY
 )
 
+hunter_add_package(ZLIB)
 find_package(ZLIB REQUIRED)
 
 include_directories(
