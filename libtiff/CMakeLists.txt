@@ -2,10 +2,9 @@
 #  CMake file for libtiff. See root CMakeLists.txt
 #
 # ----------------------------------------------------------------------------
-project(${TIFF_LIBRARY})
-
 include(CheckFunctionExists)
 include(CheckIncludeFile)
+include(TestBigEndian)
 
 check_include_file(assert.h HAVE_ASSERT_H)
 check_include_file(fcntl.h HAVE_FCNTL_H)
@@ -17,16 +16,26 @@ check_include_file(string.h HAVE_STRING_H)
 check_include_file(sys/types.h HAVE_SYS_TYPES_H)
 check_include_file(unistd.h HAVE_UNISTD_H)
 
+test_big_endian(WORDS_BIGENDIAN)
+
 if(WIN32 AND NOT HAVE_WINRT)
   set(USE_WIN32_FILEIO 1)
 endif()
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/tif_config.h.cmakein"
-               "${CMAKE_CURRENT_BINARY_DIR}/tif_config.h" @ONLY)
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/tif_config.h.cmakein"
+    "${CMAKE_CURRENT_BINARY_DIR}/tif_config.h"
+    @ONLY
+)
 
-ocv_include_directories("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" ${ZLIB_INCLUDE_DIR})
+include_directories(
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_BINARY_DIR}"
+    ${ZLIB_INCLUDE_DIRS}
+)
 
-set(lib_srcs
+set(
+    lib_srcs
     tif_aux.c
     tif_close.c
     tif_codec.c
@@ -77,7 +86,7 @@ set(lib_srcs
     uvcode.h
     tiffio.hxx
     "${CMAKE_CURRENT_BINARY_DIR}/tif_config.h"
-    )
+)
 
 if(WIN32 AND NOT HAVE_WINRT)
   list(APPEND lib_srcs tif_win32.c)
@@ -85,35 +94,13 @@ else()
   list(APPEND lib_srcs tif_unix.c)
 endif()
 
-ocv_warnings_disable(CMAKE_C_FLAGS -Wno-unused-but-set-variable -Wmissing-prototypes -Wmissing-declarations -Wundef -Wunused -Wsign-compare
-                                   -Wcast-align -Wshadow -Wno-maybe-uninitialized -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast)
-ocv_warnings_disable(CMAKE_C_FLAGS -Wunused-parameter) # clang
-ocv_warnings_disable(CMAKE_CXX_FLAGS -Wmissing-declarations -Wunused-parameter)
-ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4018 /wd4100 /wd4127 /wd4311 /wd4701 /wd4706) # vs2005
-ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4244) # vs2008
-ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4267 /wd4305 /wd4306) # vs2008 Win64
-ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4703) # vs2012
+add_library(libtiff ${lib_srcs})
+target_link_libraries(libtiff ${ZLIB_LIBRARIES})
 
-ocv_warnings_disable(CMAKE_C_FLAGS /wd4267 /wd4244 /wd4018)
-
-if(UNIX AND (CMAKE_COMPILER_IS_GNUCXX OR CV_ICC))
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+if(UNIX AND CMAKE_COMPILER_IS_GNUCXX)
+  set_target_properties(libtiff PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 endif()
-
-add_library(${TIFF_LIBRARY} STATIC ${lib_srcs})
-target_link_libraries(${TIFF_LIBRARY} ${ZLIB_LIBRARIES})
-
-set_target_properties(${TIFF_LIBRARY}
-    PROPERTIES
-    OUTPUT_NAME "${TIFF_LIBRARY}"
-    DEBUG_POSTFIX "${OPENCV_DEBUG_POSTFIX}"
-    ARCHIVE_OUTPUT_DIRECTORY ${3P_LIBRARY_OUTPUT_PATH}
-    )
 
 if(ENABLE_SOLUTION_FOLDERS)
-  set_target_properties(${TIFF_LIBRARY} PROPERTIES FOLDER "3rdparty")
-endif()
-
-if(NOT BUILD_SHARED_LIBS)
-  ocv_install_target(${TIFF_LIBRARY} EXPORT OpenCVModules ARCHIVE DESTINATION ${OPENCV_3P_LIB_INSTALL_PATH} COMPONENT dev)
+  set_target_properties(libtiff PROPERTIES FOLDER "3rdparty")
 endif()
