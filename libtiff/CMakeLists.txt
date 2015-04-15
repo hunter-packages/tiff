@@ -4,6 +4,7 @@
 # ----------------------------------------------------------------------------
 include(CheckFunctionExists)
 include(CheckIncludeFile)
+include(CheckLibraryExists)
 include(TestBigEndian)
 
 check_include_file(assert.h HAVE_ASSERT_H)
@@ -98,6 +99,12 @@ endif()
 
 add_library(libtiff ${lib_srcs})
 target_link_libraries(libtiff PUBLIC ZLIB::zlib)
+
+# Some platforms (e.g. Linux) need separate math library
+check_library_exists(m pow "" LIB_M_REQUIRED)
+if(LIB_M_REQUIRED)
+  target_link_libraries(libtiff PRIVATE m)
+endif()
 
 if(UNIX AND CMAKE_COMPILER_IS_GNUCXX)
   set_target_properties(libtiff PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
