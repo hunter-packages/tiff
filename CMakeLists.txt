@@ -2,10 +2,9 @@ cmake_minimum_required(VERSION 3.0)
 
 include("cmake/HunterGate.cmake")
 HunterGate(
-    URL "https://github.com/ruslo/hunter/archive/v0.8.1.tar.gz"
-    SHA1 "a9bd96ab113f3af870b13cd05cf4e75b8848cf4a"
+    URL "https://github.com/ruslo/hunter/archive/v0.9.9.tar.gz"
+    SHA1 "3f4283a229e990b7faa82dd6e10d8b71c3f2e409"
 )
-
-project(TIFF)
+project(TIFF VERSION 4.0.2)
 
 add_subdirectory(libtiff)
