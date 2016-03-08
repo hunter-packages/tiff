@@ -97,6 +97,12 @@ else()
   list(APPEND lib_srcs tif_unix.c)
 endif()
 
+if(MSVC AND BUILD_SHARED_LIBS)
+   message("NOTE: TIFF uses new CMake(3.4 or higher) export all feature for building DLL on windows with MSVC. Refer to the article https://blog.kitware.com/create-dlls-on-windows-without-declspec-using-new-cmake-export-all-feature/ for more details.")
+   cmake_minimum_required(VERSION 3.4)
+   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS "TRUE")
+endif()
+
 add_library(libtiff ${lib_srcs})
 target_link_libraries(libtiff PUBLIC ZLIB::zlib)
 
