@@ -97,6 +97,11 @@ else()
   list(APPEND lib_srcs tif_unix.c)
 endif()
 
+if(MSVC AND BUILD_SHARED_LIBS)
+   cmake_minimum_required(VERSION 3.4)
+   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS "TRUE")
+endif()
+
 add_library(libtiff ${lib_srcs})
 target_link_libraries(libtiff PUBLIC ZLIB::zlib)
 
