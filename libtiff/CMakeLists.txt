@@ -123,6 +123,9 @@ endif()
 if(MSVC)
   # MessageBoxA, GetFocus
   target_link_libraries(libtiff PUBLIC User32)
+
+  # GetFileSize, CreateFileA, CreateFileW
+  target_link_libraries(libtiff PUBLIC Kernel32)
 endif()
 
 ####
