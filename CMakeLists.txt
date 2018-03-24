@@ -7,4 +7,8 @@ HunterGate(
 )
 project(TIFF VERSION 4.0.2)
 
+if(MSVC)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
+
 add_subdirectory(libtiff)
