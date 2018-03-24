@@ -120,6 +120,11 @@ if(ENABLE_SOLUTION_FOLDERS)
   set_target_properties(libtiff PROPERTIES FOLDER "3rdparty")
 endif()
 
+if(MSVC)
+  # MessageBoxA, GetFocus
+  target_link_libraries(libtiff PUBLIC User32)
+endif()
+
 ####
 # Installation (https://github.com/forexample/package-example)
 
