@@ -106,6 +106,17 @@ endif()
 add_library(libtiff ${lib_srcs})
 target_link_libraries(libtiff PUBLIC ZLIB::zlib)
 
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
+  # Can't use MessageBoxA, GetFocus, GetFileSize, CreateFileA, CreateFileW
+  target_compile_definitions(libtiff PRIVATE TIFF_WINDOWS_STORE)
+elseif(MSVC)
+  # MessageBoxA, GetFocus
+  target_link_libraries(libtiff PUBLIC User32)
+
+  # GetFileSize, CreateFileA, CreateFileW
+  target_link_libraries(libtiff PUBLIC Kernel32)
+endif()
+
 # Some platforms (e.g. Linux) need separate math library
 check_library_exists(m pow "" LIB_M_REQUIRED)
 if(LIB_M_REQUIRED)
@@ -118,14 +129,6 @@ endif()
 
 if(ENABLE_SOLUTION_FOLDERS)
   set_target_properties(libtiff PROPERTIES FOLDER "3rdparty")
-endif()
-
-if(MSVC)
-  # MessageBoxA, GetFocus
-  target_link_libraries(libtiff PUBLIC User32)
-
-  # GetFileSize, CreateFileA, CreateFileW
-  target_link_libraries(libtiff PUBLIC Kernel32)
 endif()
 
 ####

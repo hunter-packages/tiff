@@ -31,6 +31,7 @@
 #include "tiffiop.h"
 
 #include <windows.h>
+#include <stdlib.h> // abort
 
 static tmsize_t
 _tiffReadProc(thandle_t fd, void* buf, tmsize_t size)
@@ -128,9 +129,15 @@ _tiffCloseProc(thandle_t fd)
 static uint64
 _tiffSizeProc(thandle_t fd)
 {
+#if defined(TIFF_WINDOWS_STORE)
+    // GetFileSize is not available,
+    // user should inject his own version of tiffSizeProc
+    abort();
+#else
     ULARGE_INTEGER m;
     m.LowPart=GetFileSize(fd,&m.HighPart);
     return(m.QuadPart);
+#endif
 }
 
 static int
@@ -224,7 +231,7 @@ TIFFFdOpen(int ifd, const char* name, const char* mode)
     return (tif);
 }
 
-#ifndef _WIN32_WCE
+#if !defined(_WIN32_WCE) && !defined(TIFF_WINDOWS_STORE)
 
 /*
  * Open a TIFF file for read/writing.
@@ -371,7 +378,7 @@ _TIFFmemcmp(const void* p1, const void* p2, tmsize_t c)
 static void
 Win32WarningHandler(const char* module, const char* fmt, va_list ap)
 {
-#ifndef TIF_PLATFORM_CONSOLE
+#if !defined(TIF_PLATFORM_CONSOLE) && !defined(TIFF_WINDOWS_STORE)
     LPTSTR szTitle;
     LPTSTR szTmp;
     LPCTSTR szTitleText = "%s Warning";
@@ -402,7 +409,7 @@ TIFFErrorHandler _TIFFwarningHandler = Win32WarningHandler;
 static void
 Win32ErrorHandler(const char* module, const char* fmt, va_list ap)
 {
-#ifndef TIF_PLATFORM_CONSOLE
+#if !defined(TIF_PLATFORM_CONSOLE) && !defined(TIFF_WINDOWS_STORE)
     LPTSTR szTitle;
     LPTSTR szTmp;
     LPCTSTR szTitleText = "%s Error";
